@@ -16,17 +16,17 @@ class ViewController: NSViewController {
     lazy var peerID: MCPeerID = {
         let peer: MCPeerID
 
-        if let peerData = UserDefaults.standard.data(forKey: "mePeerID") {
+        if let peerData = UserDefaults.standard.data(forKey: "mePeerIDR") {
             guard let unarchivedPeer = NSKeyedUnarchiver.unarchiveObject(with: peerData) as? MCPeerID else {
                 fatalError("mePeerID in user defaults is not a MCPeerID. WHAT?")
             }
 
             peer = unarchivedPeer
         } else {
-            peer = MCPeerID(displayName: "PayPal")
+            peer = MCPeerID(displayName: "Nagarro 2")
 
             let peerData = NSKeyedArchiver.archivedData(withRootObject: peer)
-            UserDefaults.standard.set(peerData, forKey: "mePeerID")
+            UserDefaults.standard.set(peerData, forKey: "mePeerIDR")
             UserDefaults.standard.synchronize()
         }
 
@@ -79,7 +79,10 @@ class ViewController: NSViewController {
         print(pathToShare!)
         
         if session.connectedPeers.count > 0 {
+            let data = NSData(contentsOfFile: pathToShare!)
+            let data2 = NSData(contentsOf: URL(string: pathToShare!)!)
             
+            try? session.send(data! as Data, toPeers: session.connectedPeers, with: .reliable)
         }
         
     }
@@ -92,7 +95,8 @@ class ViewController: NSViewController {
         dialog.showsResizeIndicator    = true;
         dialog.showsHiddenFiles        = false;
         dialog.allowsMultipleSelection = false;
-        
+        dialog.canChooseDirectories = true
+        dialog.canChooseFiles = true
         if (dialog.runModal() ==  NSApplication.ModalResponse.OK) {
             let result = dialog.url // Pathname of the file
 
@@ -125,6 +129,7 @@ extension ViewController: MCSessionDelegate, MCBrowserViewControllerDelegate {
     }
     
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
+        print("Rceived data \(data.count)")
 //        if let image = UIImage(data: data) {
 //            DispatchQueue.main.async { [unowned self] in
 //                // do something with the image
